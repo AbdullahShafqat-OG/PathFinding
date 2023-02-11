@@ -167,13 +167,13 @@ public class FollowPath : MonoBehaviour {
                     best = wp;
                     bestIndex = index;
                 }
-                Debug.Log($"GP:{wp.name} and SL:{currentNode.name} distance:{value}");
+                //Debug.Log($"GP:{wp.name} and SL:{currentNode.name} distance:{value}");
             }
             
             index++;
         }
        
-        Debug.Log($"Best is {best.name} index {bestIndex}");
+        //Debug.Log($"Best is {best.name} index {bestIndex}");
         currentWPInitial = bestIndex;
     }
 
