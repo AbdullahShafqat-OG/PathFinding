@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class FollowPath : MonoBehaviour {
 
@@ -22,23 +23,33 @@ public class FollowPath : MonoBehaviour {
     // Array of waypoints
     GameObject[] wps;
     // Current waypoint
+    [SerializeField]
     GameObject currentNode;
     // Starting waypoint index
     [SerializeField]
     int currentWP = 0;
+    int currentWPInitial;
     // Access to the Graph script
     Graph g;
+
+    public enum State { Moving, Waiting, Static };
+    public State myState = State.Static;
+
+    public float obstacleRange = 5.0f;
+    public float radius = 0.75f;
 
     private Coroutine moveCoroutine;
 
     private void OnEnable()
     {
-        WPManager.onEndLocationUpdated += GoToEndLocation;
+        if (this.name == "Player1") WPManager.onEndLocationUpdated += GoToGoalLocation;
+        if (this.name == "Player2") WPManager.onEndLocationUpdated2 += GoToGoalLocation;
     }
 
     private void OnDisable()
     {
-        WPManager.onEndLocationUpdated -= GoToEndLocation;
+        if (this.name == "Player1") WPManager.onEndLocationUpdated -= GoToGoalLocation;
+        if (this.name == "Player2") WPManager.onEndLocationUpdated2 -= GoToGoalLocation;
     }
 
     // Use this for initialization
@@ -46,13 +57,20 @@ public class FollowPath : MonoBehaviour {
 
         // Get hold of wpManager and Graph scripts
         wps = wpManager.GetComponent<WPManager>().waypoints;
-        g = wpManager.GetComponent<WPManager>().graph;
+        if (this.name == "Player1") g = wpManager.GetComponent<WPManager>().graphs[0];
+        if (this.name == "Player2") g = wpManager.GetComponent<WPManager>().graphs[1];
         // Set the current Node
         currentNode = wps[currentWP];
+
+        currentWPInitial = currentWP;
     }
 
-    private void GoToEndLocation(int index)
+    private void GoToGoalLocation(int index)
     {
+        Debug.Log("GOING TO LOCATION FOR " + this.name);
+        if (myState != State.Static) return;
+
+        currentNode = wps[currentWPInitial];
         g.AStar(currentNode, wps[index]);
         currentWP = 0;
     }
@@ -65,66 +83,39 @@ public class FollowPath : MonoBehaviour {
         currentWP = 0;
     }
 
-    public void GoToRuin() {
-
-        // Use the AStar method passing it currentNode and distination
-        g.AStar(currentNode, wps[0]);
-        // Reset index
-        currentWP = 0;
-    }
-
-    public void GoBehindHeli() {
-
-        // Use the AStar method passing it currentNode and distination
-        g.AStar(currentNode, wps[11]);
-        // Reset index
-        currentWP = 0;
-    }
-
     // Update is called once per frame
     void LateUpdate() {
-        if (moveCoroutine == null) moveCoroutine = StartCoroutine(Test());
-        //// If we've nowhere to go then just return
-        //if (g.getPathLength() == 0 || currentWP == g.getPathLength())
-        //    return;
-
-        ////the node we are closest to at this moment
-        //currentNode = g.getPathPoint(currentWP);
-
-        ////if we are close enough to the current waypoint move to next
-        //if (Vector3.Distance(
-        //    g.getPathPoint(currentWP).transform.position,
-        //    transform.position) < accuracy) {
-        //    currentWP++;
-        //}
-
-        ////if we are not at the end of the path
-        //if (currentWP < g.getPathLength())
-        //{
-        //    bool wait = true ? g.getPathLength() / 2 == currentWP : false;
-        //    if (wait == true) Debug.Log("wait: " + wait);
-
-        //    goal = g.getPathPoint(currentWP).transform;
-        //    Vector3 lookAtGoal = new Vector3(goal.position.x,
-        //                                    this.transform.position.y,
-        //                                    goal.position.z);
-        //    Vector3 direction = lookAtGoal - this.transform.position;
-
-        //    // Rotate towards the heading
-        //    this.transform.rotation = Quaternion.Slerp(this.transform.rotation,
-        //                                            Quaternion.LookRotation(direction),
-        //                                            Time.deltaTime * rotSpeed);
-
-        //    // Move the tank
-        //    this.transform.Translate(0, 0, speed * Time.deltaTime);
-        //}
+        myState = State.Static;
+        if (!currentNode.CompareTag("startLocation")) myState = State.Waiting;
+        if (moveCoroutine == null) moveCoroutine = StartCoroutine(Move());
     }
 
-    private IEnumerator Test()
+    private IEnumerator Move()
     {
+        Ray ray = new Ray(transform.position, transform.forward);
+        RaycastHit hit;
+        if (Physics.SphereCast(ray, radius, out hit))
+        {
+            if (hit.distance < obstacleRange && hit.transform.CompareTag("character"))
+            {
+                yield break;
+            }
+        }
+
         // If we've nowhere to go then just return
         if (g.getPathLength() == 0 || currentWP == g.getPathLength())
-            yield break;
+        {
+            if (myState == State.Static) yield break;
+            else
+            {
+                yield return new WaitForSeconds(waitAtLocation);
+                PathBack();
+                g.AStar(currentNode, wps[currentWPInitial]);
+                currentWP = 0;
+            }
+        }
+
+        myState = State.Moving;
 
         //the node we are closest to at this moment
         currentNode = g.getPathPoint(currentWP);
@@ -140,11 +131,6 @@ public class FollowPath : MonoBehaviour {
         //if we are not at the end of the path
         if (currentWP < g.getPathLength())
         {
-            bool wait = true ? g.getPathLength() / 2 == currentWP : false;
-            if (wait == true) Debug.Log("wait: " + wait);
-
-            if (wait == true) yield return new WaitForSeconds(waitAtLocation);
-
             goal = g.getPathPoint(currentWP).transform;
             Vector3 lookAtGoal = new Vector3(goal.position.x,
                                             this.transform.position.y,
@@ -163,26 +149,38 @@ public class FollowPath : MonoBehaviour {
         moveCoroutine = null;
     }
 
-    public void Original()
+    private void PathBack()
     {
-        //if we are not at the end of the path
-        if (currentWP < g.getPathLength())
+        GameObject best = null;
+        float bestDistance = 100000f;
+        int index = 0;
+        int bestIndex = 0;
+
+        foreach (GameObject wp in wps)
         {
-            bool wait = true ? g.getPathLength() / 2 == currentWP : false;
-            if (wait == true) Debug.Log("wait: " + wait);
-            goal = g.getPathPoint(currentWP).transform;
-            Vector3 lookAtGoal = new Vector3(goal.position.x,
-                                            this.transform.position.y,
-                                            goal.position.z);
-            Vector3 direction = lookAtGoal - this.transform.position;
-
-            // Rotate towards the heading
-            this.transform.rotation = Quaternion.Slerp(this.transform.rotation,
-                                                    Quaternion.LookRotation(direction),
-                                                    Time.deltaTime * rotSpeed);
-
-            // Move the tank
-            this.transform.Translate(0, 0, speed * Time.deltaTime);
+            if (wp.CompareTag("startLocation"))
+            {
+                float value = g.AStarPath(currentNode, wp);
+                if (value < bestDistance)
+                {
+                    bestDistance = value;
+                    best = wp;
+                    bestIndex = index;
+                }
+                Debug.Log($"GP:{wp.name} and SL:{currentNode.name} distance:{value}");
+            }
+            
+            index++;
         }
+       
+        Debug.Log($"Best is {best.name} index {bestIndex}");
+        currentWPInitial = bestIndex;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, transform.position + transform.forward * obstacleRange);
+        Gizmos.DrawWireSphere(transform.position + transform.forward * obstacleRange, radius);
     }
 }

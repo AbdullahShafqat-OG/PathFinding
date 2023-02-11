@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class WaypointDebug : MonoBehaviour {
+public class GoalLocationDebug : MonoBehaviour {
 
-	void RenameWPs(GameObject overlook)
+	void RenameGoalLocations(GameObject overlook)
 	{
 		GameObject[] gos;
-        gos = GameObject.FindGameObjectsWithTag("wp");
+        gos = GameObject.FindGameObjectsWithTag("goalLocation");
         int i = 1;
 	    foreach (GameObject go in gos)
         {
             if (go != overlook)
 	     	{
-                go.name = "WP" + string.Format("{0:000}", i);
+                go.name = "GL" + string.Format("{0:000}", i);
                 i++;
             } 
 	    }	
@@ -22,13 +22,13 @@ public class WaypointDebug : MonoBehaviour {
 
 	void OnDestroy()
 	{
-		RenameWPs(this.gameObject);
+		RenameGoalLocations(this.gameObject);
 	}
 
 	// Use this for initialization
 	void Start () {
-        if (this.transform.parent.gameObject.name != "WayPoint") return;
-        RenameWPs(null);
+        if (this.transform.parent.gameObject.name != "GoalLocation") return;
+        RenameGoalLocations(null);
 	}
 	
 	// Update is called once per frame
