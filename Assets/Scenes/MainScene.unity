@@ -7132,7 +7132,7 @@ GameObject:
   - component: {fileID: 1432476457}
   m_Layer: 0
   m_Name: Player2
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7152,6 +7152,7 @@ MonoBehaviour:
   speed: 1.2
   accuracy: 0.7
   rotSpeed: 5
+  turnSpeed: 180
   waitAtLocation: 1
   wpManager: {fileID: 1934325790}
   currentNode: {fileID: 0}
@@ -7159,6 +7160,7 @@ MonoBehaviour:
   myState: 2
   obstacleRange: 0.8
   radius: 0.25
+  avoidRadius: 1
 --- !u!65 &1432476458
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10674,6 +10676,7 @@ MonoBehaviour:
   speed: 1.2
   accuracy: 0.7
   rotSpeed: 5
+  turnSpeed: 180
   waitAtLocation: 1
   wpManager: {fileID: 1934325790}
   currentNode: {fileID: 0}
@@ -10681,6 +10684,7 @@ MonoBehaviour:
   myState: 2
   obstacleRange: 0.8
   radius: 0.25
+  avoidRadius: 1
 --- !u!4 &50596595578802581
 Transform:
   m_ObjectHideFlags: 0
@@ -10823,7 +10827,7 @@ GameObject:
   - component: {fileID: 2108668504}
   m_Layer: 0
   m_Name: Player1
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

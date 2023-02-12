@@ -16,6 +16,8 @@ public class FollowPath : MonoBehaviour {
     [SerializeField]
     float rotSpeed = 2.0f;
     [SerializeField]
+    float turnSpeed = 180.0f;
+    [SerializeField]
     float waitAtLocation = 1.0f;
 
     // Access to the WPManager script
@@ -37,6 +39,8 @@ public class FollowPath : MonoBehaviour {
 
     public float obstacleRange = 5.0f;
     public float radius = 0.75f;
+
+    public float avoidRadius = 5.0f;
 
     private Coroutine moveCoroutine;
 
@@ -142,6 +146,15 @@ public class FollowPath : MonoBehaviour {
                                                     Quaternion.LookRotation(direction),
                                                     Time.deltaTime * rotSpeed);
 
+            Collider[] colliders = Physics.OverlapSphere(transform.position, avoidRadius);
+            foreach (Collider collider in colliders)
+            {
+                if (!collider.CompareTag("Player")) continue;
+                if (collider.gameObject == gameObject) continue;
+
+                transform.Rotate(Vector3.up, turnSpeed * Time.deltaTime);
+            }
+
             // Move the tank
             this.transform.Translate(0, 0, speed * Time.deltaTime);
         }
@@ -182,5 +195,8 @@ public class FollowPath : MonoBehaviour {
         Gizmos.color = Color.red;
         Gizmos.DrawLine(transform.position, transform.position + transform.forward * obstacleRange);
         Gizmos.DrawWireSphere(transform.position + transform.forward * obstacleRange, radius);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, avoidRadius);
     }
 }

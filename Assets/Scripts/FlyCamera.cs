@@ -40,7 +40,7 @@ public class FlyCamera : MonoBehaviour
             transform.position -= speed * Time.deltaTime * transform.up;
         }
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(1))
         {
             rotX += Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
             rotY -= Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
