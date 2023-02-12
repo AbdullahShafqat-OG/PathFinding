@@ -2,17 +2,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class FollowPath : MonoBehaviour {
+public class IntelligentAgent : MonoBehaviour {
 
-    // Tank targer
     Transform goal;
-    // Tank speed
     [SerializeField]
     float speed = 5.0f;
-    // Final distance from target
     [SerializeField]
     float accuracy = 1.0f;
-    // Tank rotation speed
     [SerializeField]
     float rotSpeed = 2.0f;
     [SerializeField]
@@ -20,18 +16,13 @@ public class FollowPath : MonoBehaviour {
     [SerializeField]
     float waitAtLocation = 1.0f;
 
-    // Access to the WPManager script
     public GameObject wpManager;
-    // Array of waypoints
     GameObject[] wps;
-    // Current waypoint
     [SerializeField]
     GameObject currentNode;
-    // Starting waypoint index
     [SerializeField]
     int currentWP = 0;
     int currentWPInitial;
-    // Access to the Graph script
     Graph g;
 
     public enum State { Moving, Waiting, Static };
@@ -41,6 +32,7 @@ public class FollowPath : MonoBehaviour {
     public float radius = 0.75f;
 
     public float avoidRadius = 5.0f;
+    public GameObject parcel;
 
     private Coroutine moveCoroutine;
 
@@ -56,14 +48,11 @@ public class FollowPath : MonoBehaviour {
         if (this.name == "Player2") WPManager.onEndLocationUpdated2 -= GoToGoalLocation;
     }
 
-    // Use this for initialization
     void Start() {
 
-        // Get hold of wpManager and Graph scripts
         wps = wpManager.GetComponent<WPManager>().waypoints;
         if (this.name == "Player1") g = wpManager.GetComponent<WPManager>().graphs[0];
         if (this.name == "Player2") g = wpManager.GetComponent<WPManager>().graphs[1];
-        // Set the current Node
         currentNode = wps[currentWP];
 
         currentWPInitial = currentWP;
@@ -81,13 +70,10 @@ public class FollowPath : MonoBehaviour {
 
     public void GoToHeli() {
 
-        // Use the AStar method passing it currentNode and distination
         g.AStar(currentNode, wps[4]);
-        // Reset index
         currentWP = 0;
     }
 
-    // Update is called once per frame
     void LateUpdate() {
         myState = State.Static;
         if (!currentNode.CompareTag("startLocation")) myState = State.Waiting;
@@ -106,12 +92,16 @@ public class FollowPath : MonoBehaviour {
             }
         }
 
-        // If we've nowhere to go then just return
         if (g.getPathLength() == 0 || currentWP == g.getPathLength())
         {
-            if (myState == State.Static) yield break;
+            if (myState == State.Static)
+            {
+                parcel.SetActive(true);
+                yield break;
+            }
             else
             {
+                parcel.SetActive(false);
                 yield return new WaitForSeconds(waitAtLocation);
                 PathBack();
                 g.AStar(currentNode, wps[currentWPInitial]);
@@ -121,10 +111,8 @@ public class FollowPath : MonoBehaviour {
 
         myState = State.Moving;
 
-        //the node we are closest to at this moment
         currentNode = g.getPathPoint(currentWP);
 
-        //if we are close enough to the current waypoint move to next
         if (Vector3.Distance(
             g.getPathPoint(currentWP).transform.position,
             transform.position) < accuracy)
@@ -132,7 +120,6 @@ public class FollowPath : MonoBehaviour {
             currentWP++;
         }
 
-        //if we are not at the end of the path
         if (currentWP < g.getPathLength())
         {
             goal = g.getPathPoint(currentWP).transform;
@@ -141,7 +128,6 @@ public class FollowPath : MonoBehaviour {
                                             goal.position.z);
             Vector3 direction = lookAtGoal - this.transform.position;
 
-            // Rotate towards the heading
             this.transform.rotation = Quaternion.Slerp(this.transform.rotation,
                                                     Quaternion.LookRotation(direction),
                                                     Time.deltaTime * rotSpeed);
@@ -155,7 +141,6 @@ public class FollowPath : MonoBehaviour {
                 transform.Rotate(Vector3.up, turnSpeed * Time.deltaTime);
             }
 
-            // Move the tank
             this.transform.Translate(0, 0, speed * Time.deltaTime);
         }
 

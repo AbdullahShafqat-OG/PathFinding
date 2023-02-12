@@ -25,14 +25,12 @@ public class StartLocationDebug : MonoBehaviour
 		RenameStartLocations(this.gameObject);
 	}
 
-	// Use this for initialization
 	void Start()
 	{
 		if (this.transform.parent.gameObject.name != "StartLocation") return;
 		RenameStartLocations(null);
 	}
 
-	// Update is called once per frame
 	void Update()
 	{
 		this.GetComponent<TextMesh>().text = this.transform.parent.gameObject.name;
