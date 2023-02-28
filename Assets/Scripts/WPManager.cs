@@ -38,7 +38,7 @@ public class WPManager : MonoBehaviour {
         if (waypoints.Length > 0) {
             foreach (GameObject wp in waypoints) {
                 foreach (Graph graph in graphs)
-                    graph.AddNode(wp, false, false, false);
+                    graph.AddNode(wp);
             }
 
             foreach (Link l in links) {
@@ -49,10 +49,6 @@ public class WPManager : MonoBehaviour {
                 }
             }
         }
-    }
-
-    void Update() {
-        graphs[0].debugDraw();
     }
 
     private void OnDrawGizmos()

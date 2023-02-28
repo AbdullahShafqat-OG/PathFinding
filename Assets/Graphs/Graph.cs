@@ -8,26 +8,19 @@ public class Graph {
 
     public Graph() { }
 
-    public void AddNode(GameObject id, bool removeRenderer = true, bool removeCollider = true, bool removeId = true) {
-        Node node = new Node(id);
+    public void AddNode(GameObject go) {
+        Node node = new Node(go);
         nodes.Add(node);
 
-        //remove colliders and mesh renderer
-        if (removeCollider)
-            GameObject.Destroy(id.GetComponent<Collider>());
-        if (removeRenderer)
-            GameObject.Destroy(id.GetComponent<Renderer>());
-        if (removeId) {
-            TextMesh[] textms = id.GetComponentsInChildren<TextMesh>() as TextMesh[];
+        TextMesh[] textms = go.GetComponentsInChildren<TextMesh>() as TextMesh[];
 
-            foreach (TextMesh tm in textms)
-                GameObject.Destroy(tm.gameObject);
-        }
+        foreach (TextMesh tm in textms)
+            GameObject.Destroy(tm.gameObject);
     }
 
     public void AddEdge(GameObject fromNode, GameObject toNode) {
-        Node from = findNode(fromNode);
-        Node to = findNode(toNode);
+        Node from = FindNodeInGraph(fromNode);
+        Node to = FindNodeInGraph(toNode);
 
         if (from != null && to != null) {
             Edge e = new Edge(from, to);
@@ -36,7 +29,7 @@ public class Graph {
         }
     }
 
-    Node findNode(GameObject id) {
+    Node FindNodeInGraph(GameObject id) {
         foreach (Node n in nodes) {
             if (n.getId() == id)
                 return n;
@@ -53,38 +46,29 @@ public class Graph {
         return pathList[index].id;
     }
 
-    public void printPath() {
-        foreach (Node n in pathList) {
-            Debug.Log(n.id.name);
-        }
-    }
+    public bool AStar(GameObject goStart, GameObject goEnd) {
+        Node sNode = FindNodeInGraph(goStart);
+        Node eNode = FindNodeInGraph(goEnd);
 
-
-    public bool AStar(GameObject startId, GameObject endId) {
-        Node start = findNode(startId);
-        Node end = findNode(endId);
-
-        if (start == null || end == null) {
-            return false;
-        }
+        if (sNode == null || eNode == null) return false;
 
         List<Node> open = new List<Node>();
         List<Node> closed = new List<Node>();
         float tentative_g_score = 0;
         bool tentative_is_better;
 
-        start.g = 0;
-        start.h = distance(start, end);
-        start.f = start.h;
-        open.Add(start);
+        sNode.g = 0;
+        sNode.h = distance(sNode, eNode);
+        sNode.f = sNode.h;
+        open.Add(sNode);
 
         while (open.Count > 0) {
             int i = lowestF(open);
             Node thisnode = open[i];
-            if (thisnode.id == endId)  //path found
+            if (thisnode.id == goEnd)
             {
-                Debug.Log("Score : " + tentative_g_score);
-                reconstructPath(start, end);
+                Debug.Log("BEST DISTANCE : " + tentative_g_score);
+                reconstructPath(sNode, eNode);
                 return true;
             }
 
@@ -113,7 +97,7 @@ public class Graph {
                     neighbour.cameFrom = thisnode;
                     neighbour.g = tentative_g_score;
                     //neighbour.h = distance(thisnode,neighbour);
-                    neighbour.h = distance(thisnode, end);
+                    neighbour.h = distance(thisnode, eNode);
                     neighbour.f = neighbour.g + neighbour.h;
                 }
             }
@@ -123,12 +107,12 @@ public class Graph {
         return false;
     }
 
-    public float AStarPath(GameObject startId, GameObject endId)
+    public float AStarPath(GameObject goStart, GameObject goEnd)
     {
-        Node start = findNode(startId);
-        Node end = findNode(endId);
+        Node sNode = FindNodeInGraph(goStart);
+        Node eNode = FindNodeInGraph(goEnd);
 
-        if (start == null || end == null)
+        if (sNode == null || eNode == null)
         {
             return float.NaN;
         }
@@ -138,18 +122,18 @@ public class Graph {
         float tentative_g_score = 0;
         bool tentative_is_better;
 
-        start.g = 0;
-        start.h = distance(start, end);
-        start.f = start.h;
-        open.Add(start);
+        sNode.g = 0;
+        sNode.h = distance(sNode, eNode);
+        sNode.f = sNode.h;
+        open.Add(sNode);
 
         while (open.Count > 0)
         {
             int i = lowestF(open);
             Node thisnode = open[i];
-            if (thisnode.id == endId)  //path found
+            if (thisnode.id == goEnd)  //path found
             {
-                Debug.Log("Score : " + tentative_g_score);
+                //Debug.Log("Score : " + tentative_g_score);
                 return tentative_g_score;
             }
 
@@ -184,7 +168,7 @@ public class Graph {
                     neighbour.cameFrom = thisnode;
                     neighbour.g = tentative_g_score;
                     //neighbour.h = distance(thisnode,neighbour);
-                    neighbour.h = distance(thisnode, end);
+                    neighbour.h = distance(thisnode, eNode);
                     neighbour.f = neighbour.g + neighbour.h;
                 }
             }
@@ -236,7 +220,7 @@ public class Graph {
             }
             Debug.Log($"GP {startLocation.name} and SL {endId.getId().name} distance {value}");
         }
-        Debug.Log($"Best is {best.name}");
+        Debug.Log($"BEST PATH SCORE {best.name}");
         //AStar(endId.getId(), best, false, true);
 
         List<Node> reversedList = new List<Node>(pathList);
@@ -268,18 +252,5 @@ public class Graph {
             count++;
         }
         return iteratorCount;
-    }
-
-    public void debugDraw() {
-        //draw edges
-        for (int i = 0; i < edges.Count; i++) {
-            Debug.DrawLine(edges[i].startNode.id.transform.position, edges[i].endNode.id.transform.position, Color.red);
-
-        }
-        //draw directions
-        for (int i = 0; i < edges.Count; i++) {
-            Vector3 to = (edges[i].startNode.id.transform.position - edges[i].endNode.id.transform.position) * 0.05f;
-            Debug.DrawRay(edges[i].endNode.id.transform.position, to, Color.blue);
-        }
     }
 }

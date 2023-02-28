@@ -7152,8 +7152,8 @@ MonoBehaviour:
   speed: 1.2
   accuracy: 0.7
   rotSpeed: 5
-  turnSpeed: 180
-  waitAtLocation: 1
+  avoidRotSpeed: 180
+  waitAtLocation: 5
   wpManager: {fileID: 1934325790}
   currentNode: {fileID: 0}
   currentWP: 1
@@ -9600,6 +9600,8 @@ MonoBehaviour:
     node2: {fileID: 1840578678}
   - node1: {fileID: 935068952}
     node2: {fileID: 1840578678}
+  - node1: {fileID: 597719241}
+    node2: {fileID: 1156522868}
 --- !u!4 &1934325792
 Transform:
   m_ObjectHideFlags: 0
@@ -10917,13 +10919,17 @@ PrefabInstance:
     serializedVersion: 2
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 277973527477847274, guid: 8b22986a55c9c7d478486ee7caafe900, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3779739334430198606, guid: 8b22986a55c9c7d478486ee7caafe900, type: 3}
       propertyPath: m_RootOrder
       value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 3779739334430198606, guid: 8b22986a55c9c7d478486ee7caafe900, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3779739334430198606, guid: 8b22986a55c9c7d478486ee7caafe900, type: 3}
       propertyPath: m_LocalPosition.y
@@ -11231,7 +11237,7 @@ GameObject:
   - component: {fileID: 7670154745876637455}
   m_Layer: 0
   m_Name: Player1
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11441,8 +11447,8 @@ MonoBehaviour:
   speed: 1.2
   accuracy: 0.7
   rotSpeed: 5
-  turnSpeed: 180
-  waitAtLocation: 1
+  avoidRotSpeed: 180
+  waitAtLocation: 5
   wpManager: {fileID: 1934325790}
   currentNode: {fileID: 0}
   currentWP: 0

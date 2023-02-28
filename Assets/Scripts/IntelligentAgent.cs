@@ -12,9 +12,9 @@ public class IntelligentAgent : MonoBehaviour {
     [SerializeField]
     float rotSpeed = 2.0f;
     [SerializeField]
-    float turnSpeed = 180.0f;
+    float avoidRotSpeed = 180.0f;
     [SerializeField]
-    float waitAtLocation = 1.0f;
+    float waitAtLocation = 10.0f;
 
     public GameObject wpManager;
     GameObject[] wps;
@@ -65,12 +65,6 @@ public class IntelligentAgent : MonoBehaviour {
 
         currentNode = wps[currentWPInitial];
         g.AStar(currentNode, wps[index]);
-        currentWP = 0;
-    }
-
-    public void GoToHeli() {
-
-        g.AStar(currentNode, wps[4]);
         currentWP = 0;
     }
 
@@ -138,7 +132,7 @@ public class IntelligentAgent : MonoBehaviour {
                 if (!collider.CompareTag("Player")) continue;
                 if (collider.gameObject == gameObject) continue;
 
-                transform.Rotate(Vector3.up, turnSpeed * Time.deltaTime);
+                transform.Rotate(Vector3.up, avoidRotSpeed * Time.deltaTime);
             }
 
             this.transform.Translate(0, 0, speed * Time.deltaTime);
